@@ -28,5 +28,6 @@ files {
     'html/app.js',
     'html/m.mp3',
     'html/assets/weapons/*.png',
+    'html/assets/icons/*.png',
     'stream/rectmap.ytd'
 }
