@@ -165,8 +165,8 @@ body {
 
 /* Top-right icons (user-supplied icons8 set, trimmed to one optical size) */
 .identity-icon {
-    width: clamp(25px, 2.9vh, 40px);
-    height: clamp(25px, 2.9vh, 40px);
+    width: clamp(20px, 2.3vh, 32px);
+    height: clamp(20px, 2.3vh, 32px);
     flex: 0 0 auto;
     object-fit: contain;
     pointer-events: none;
