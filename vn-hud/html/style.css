@@ -1168,7 +1168,7 @@ body {
    black/white seek bar, shuffle · prev · big pause · next · repeat
    ============================================================ */
 .radio-panel {
-    --radio-teal: rgba(13, 94, 99, 0.88);
+    --radio-teal: rgba(13, 94, 99, 0.92);
     --radio-art: #062e30;
     --radio-ink: #070b0b;
     --vol: 55%;
@@ -1188,9 +1188,10 @@ body {
     background:
         radial-gradient(130% 90% at 50% 0%, rgba(255, 255, 255, 0.07), transparent 55%),
         var(--radio-teal);
-    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(3px) saturate(1.15);
-    -webkit-backdrop-filter: blur(3px) saturate(1.15);
+    /* No backdrop-filter here: FiveM's CEF paints it as a solid black
+       rectangle behind the panel. The translucent teal alone gives the
+       same see-through look over the game world. */
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.08);
     transform: translate(-50%, -50%);
     pointer-events: auto;
     overflow-y: auto;
@@ -1462,15 +1463,6 @@ body {
     font-weight: 750;
     font-variant-numeric: tabular-nums;
     text-align: right;
-}
-
-.radio-hint {
-    margin-top: 9px;
-    color: rgba(255, 255, 255, 0.38);
-    font-size: 9px;
-    font-weight: 650;
-    letter-spacing: 0.08em;
-    text-align: center;
 }
 
 @media (max-width: 900px) {
