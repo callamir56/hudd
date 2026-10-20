@@ -1,0 +1,1438 @@
+:root {
+    --hud-left: 0px;
+    --hud-top: 0px;
+    --hud-width: 270px;
+    --safe-top: 42px;
+    --safe-right: 22px;
+    --compass-top: 0px;
+    --status-background: rgba(4, 12, 9, 0.9);
+    --panel-accent: #35dfc4;
+    --compass-accent: #35dfc4;
+    --health-color: #35e878;
+    --health-color-end: #74f6a6;
+    --water-color: #38bdf8;
+    --water-color-end: #78d8ff;
+    --food-color: #ffb84d;
+    --food-color-end: #ffd17b;
+    --stamina-color: #f1d94c;
+    --stamina-color-end: #fff08a;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+    color: #fff;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    pointer-events: none;
+}
+
+/* Top-center compass: intentionally has no panel or black background. */
+.compass {
+    position: fixed;
+    left: 50%;
+    top: var(--compass-top);
+    width: clamp(310px, 29vw, 540px);
+    height: clamp(43px, 4.5vh, 72px);
+    overflow: hidden;
+    background: transparent;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, -5px);
+    transition: opacity 180ms ease, transform 180ms ease, visibility 180ms linear;
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+
+.compass.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+.compass-track {
+    position: absolute;
+    inset: 0;
+}
+
+.compass-mark {
+    position: absolute;
+    top: clamp(2px, 0.3vh, 6px);
+    width: 42px;
+    height: 25px;
+    transform: translateX(-50%);
+    color: rgba(226, 255, 251, 0.5);
+    text-align: center;
+    text-shadow: 0 1px 4px #000, 0 0 5px rgba(0, 0, 0, 0.8);
+}
+
+.compass-mark::before {
+    content: "";
+    display: block;
+    width: 1px;
+    height: 6px;
+    margin: 0 auto 2px;
+    background: currentColor;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.compass-mark.is-intercardinal::before {
+    height: 8px;
+}
+
+.compass-mark.is-cardinal {
+    color: var(--compass-accent);
+    font-weight: 800;
+}
+
+.compass-mark.is-cardinal::before {
+    width: 2px;
+    height: 11px;
+    box-shadow: 0 0 7px var(--compass-accent), 0 1px 3px #000;
+}
+
+.compass-mark-label {
+    display: block;
+    font-size: clamp(8px, 0.82vh, 14px);
+    line-height: 1;
+    letter-spacing: 0.08em;
+}
+
+.compass-center-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 2px;
+    height: clamp(15px, 1.7vh, 28px);
+    border-radius: 2px;
+    background: #fff;
+    box-shadow: 0 0 8px var(--compass-accent), 0 1px 3px #000;
+    transform: translateX(-50%);
+}
+
+.compass-heading {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(1px, 0.2vh, 4px);
+    min-width: 45px;
+    color: var(--compass-accent);
+    font-size: clamp(11px, 1.1vh, 19px);
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+    text-shadow: 0 1px 4px #000, 0 0 7px rgba(0, 0, 0, 0.9);
+    transform: translateX(-50%);
+}
+
+/* Top-right information: transparent, with no card background. */
+.player-panel {
+    position: fixed;
+    top: var(--safe-top);
+    right: var(--safe-right);
+    width: clamp(300px, 20vw, 430px);
+    background: transparent;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(8px);
+    transition: opacity 180ms ease, transform 180ms ease, visibility 180ms linear;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.82));
+}
+
+.player-panel.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.identity-line {
+    min-height: clamp(28px, 3.1vh, 42px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: clamp(8px, 0.8vh, 12px);
+    text-align: right;
+}
+
+/* Top-right icons (user-supplied icons8 set, trimmed to one optical size) */
+.identity-icon {
+    width: clamp(20px, 2.3vh, 32px);
+    height: clamp(20px, 2.3vh, 32px);
+    flex: 0 0 auto;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+.player-primary,
+.player-secondary,
+.weapon-name {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 4px #000, 0 0 5px rgba(0, 0, 0, 0.9);
+}
+
+.player-primary {
+    color: #f5fffd;
+    font-size: clamp(14px, 1.35vh, 24px);
+    font-weight: 800;
+}
+
+.player-secondary {
+    color: rgba(242, 255, 252, 0.95);
+    font-size: clamp(12px, 1.18vh, 20px);
+    font-weight: 650;
+}
+
+.player-gang {
+    color: #ffb340;
+    font-weight: 700;
+}
+
+.money-line {
+    min-height: clamp(28px, 3.1vh, 42px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: clamp(8px, 0.8vh, 12px);
+    text-align: right;
+}
+
+.money-item {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.money-value {
+    color: #f4fffd;
+    font-size: clamp(13px, 1.25vh, 22px);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 4px #000, 0 0 5px rgba(0, 0, 0, 0.9);
+}
+
+.money-item--cash .money-value {
+    color: #64efa0;
+}
+
+.weapon-display {
+    min-height: clamp(28px, 3.2vh, 38px);
+    margin-top: clamp(7px, 0.7vh, 11px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: clamp(6px, 0.55vh, 9px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-3px);
+    transition: opacity 140ms ease, transform 140ms ease, visibility 140ms linear;
+}
+
+.weapon-display.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.weapon-copy {
+    min-width: clamp(28px, 2.2vw, 38px);
+    max-width: clamp(76px, 7vw, 120px);
+    padding: clamp(3px, 0.3vh, 5px) clamp(6px, 0.55vw, 9px);
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid rgba(53, 223, 196, 0.22);
+    border-radius: 999px;
+    background: linear-gradient(145deg, rgba(7, 27, 24, 0.78), rgba(2, 12, 11, 0.58));
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.38), inset 0 0 0 1px rgba(255, 255, 255, 0.025);
+    text-align: center;
+}
+
+.weapon-name {
+    display: none;
+}
+
+.weapon-ammo-line {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    color: var(--panel-accent);
+}
+
+.weapon-ammo {
+    font-size: clamp(10px, 0.92vh, 15px);
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: 0.035em;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 4px #000, 0 0 6px rgba(53, 223, 196, 0.16);
+}
+
+.weapon-image {
+    width: clamp(42px, 3.5vw, 64px);
+    height: clamp(22px, 2.6vh, 32px);
+    flex: 0 0 auto;
+    object-fit: contain;
+    object-position: center right;
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.68)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.9));
+}
+
+.weapon-image.is-missing {
+    display: none;
+}
+
+/* Vehicle HUD: fully transparent floating layout */
+.vehicle-hud {
+    --vehicle-accent: #35dfc4;
+    --vehicle-warning: #ffb84d;
+    --vehicle-danger: #ff4f63;
+    --vehicle-gear: #fff;
+    --vehicle-bottom: 1.8vh;
+    --rpm-left: 290px;
+    --rpm-top: 760px;
+    --rpm-height: 190px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 180ms ease, visibility 180ms linear;
+    pointer-events: none;
+}
+
+.vehicle-hud.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.vehicle-speed-panel {
+    position: fixed;
+    left: 50%;
+    bottom: var(--vehicle-bottom);
+    width: clamp(350px, 27vw, 510px);
+    min-height: clamp(92px, 10vh, 142px);
+    display: grid;
+    grid-template-columns: clamp(24px, 2vw, 38px) minmax(0, 1fr) clamp(24px, 2vw, 38px);
+    grid-template-rows: 1fr auto;
+    grid-template-areas:
+        "left telemetry right"
+        "left icons right";
+    align-items: center;
+    column-gap: clamp(9px, 0.75vw, 15px);
+    row-gap: clamp(7px, 0.65vh, 11px);
+    padding: clamp(7px, 0.65vh, 11px) clamp(10px, 0.8vw, 16px);
+    color: #f4fffd;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    transform: translate(-50%, 9px) scale(0.97);
+    transition: transform 200ms ease;
+}
+
+.vehicle-hud.is-visible .vehicle-speed-panel {
+    transform: translate(-50%, 0) scale(1);
+}
+
+.vehicle-speed-panel::before {
+    content: "";
+    position: absolute;
+    left: 13%;
+    right: 13%;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(53, 223, 196, 0.66), transparent);
+    box-shadow: 0 0 8px rgba(53, 223, 196, 0.34);
+}
+
+.vehicle-speed-panel::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -2px;
+    width: 34px;
+    height: 2px;
+    border-radius: 4px;
+    background: var(--vehicle-accent);
+    box-shadow: 0 0 9px var(--vehicle-accent);
+    transform: translateX(-50%);
+}
+
+.vehicle-signal {
+    width: 100%;
+    color: rgba(220, 245, 241, 0.2);
+    font-size: clamp(30px, 2.8vh, 48px);
+    font-weight: 300;
+    line-height: 1;
+    text-align: center;
+    text-shadow: 0 2px 5px #000, 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+.vehicle-signal--left { grid-area: left; }
+.vehicle-signal--right { grid-area: right; }
+
+.vehicle-signal.is-active {
+    color: var(--vehicle-accent);
+    animation: vehicle-signal-blink 680ms steps(1, end) infinite;
+    text-shadow: 0 0 10px var(--vehicle-accent), 0 2px 4px #000;
+}
+
+.vehicle-telemetry {
+    grid-area: telemetry;
+    min-width: 0;
+    align-self: end;
+}
+
+.vehicle-speed-line {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 9px;
+}
+
+.vehicle-speed-value {
+    min-width: 2.65ch;
+    color: #fff;
+    font-size: clamp(42px, 4.5vh, 76px);
+    font-weight: 260;
+    line-height: 0.82;
+    letter-spacing: -0.055em;
+    text-align: right;
+    text-shadow: 0 0 14px rgba(53, 223, 196, 0.26), 0 2px 5px #000;
+    font-variant-numeric: tabular-nums;
+}
+
+.vehicle-speed-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-bottom: 2px;
+}
+
+.vehicle-speed-unit {
+    color: var(--vehicle-accent);
+    font-size: clamp(8px, 0.74vh, 13px);
+    font-weight: 900;
+    letter-spacing: 0.11em;
+    text-shadow: 0 1px 4px #000;
+}
+
+.vehicle-trip {
+    color: rgba(225, 248, 244, 0.48);
+    font-size: clamp(7px, 0.64vh, 11px);
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 4px #000;
+}
+
+.vehicle-bars-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(12px, 1vw, 19px);
+    margin-top: clamp(9px, 0.85vh, 14px);
+}
+
+.vehicle-stat {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 5px;
+}
+
+.vehicle-stat-label,
+.vehicle-stat-value {
+    color: rgba(226, 247, 244, 0.5);
+    font-size: clamp(6px, 0.58vh, 10px);
+    font-weight: 850;
+    text-shadow: 0 1px 3px #000;
+}
+
+.vehicle-stat-value {
+    min-width: 2.4ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.vehicle-stat-track {
+    height: clamp(3px, 0.38vh, 7px);
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+}
+
+.vehicle-stat-fill {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--vehicle-accent);
+    box-shadow: 0 0 6px var(--vehicle-accent);
+    transition: width 180ms linear, background 180ms ease;
+}
+
+.vehicle-stat.is-low .vehicle-stat-fill {
+    background: var(--vehicle-warning);
+    box-shadow: 0 0 7px var(--vehicle-warning);
+}
+
+.vehicle-stat.is-critical .vehicle-stat-fill {
+    background: var(--vehicle-danger);
+    box-shadow: 0 0 7px var(--vehicle-danger);
+}
+
+.vehicle-icons {
+    grid-area: icons;
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(13px, 1.15vw, 22px);
+}
+
+.vehicle-icon {
+    width: clamp(18px, 1.7vh, 29px);
+    height: clamp(18px, 1.7vh, 29px);
+    display: grid;
+    place-items: center;
+    color: rgba(220, 244, 240, 0.27);
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.9));
+    transition: color 140ms ease, filter 140ms ease, transform 140ms ease;
+}
+
+.vehicle-icon svg {
+    width: 88%;
+    height: 88%;
+    fill: currentColor;
+}
+
+.vehicle-icon.is-active {
+    color: var(--vehicle-accent);
+    filter: drop-shadow(0 0 5px var(--vehicle-accent));
+    transform: translateY(-1px);
+}
+
+.vehicle-icon.is-danger {
+    color: var(--vehicle-danger);
+    filter: drop-shadow(0 0 5px var(--vehicle-danger));
+}
+
+.vehicle-rpm-rail {
+    position: fixed;
+    left: var(--rpm-left);
+    top: var(--rpm-top);
+    width: clamp(42px, 2.7vw, 57px);
+    height: var(--rpm-height);
+    min-height: 125px;
+    max-height: 260px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    justify-items: center;
+    gap: 7px;
+    padding: 4px 3px;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    transform: translateX(-6px);
+    transition: transform 180ms ease;
+}
+
+.vehicle-hud.is-visible .vehicle-rpm-rail {
+    transform: translateX(0);
+}
+
+.vehicle-rpm-label,
+.vehicle-gear-label {
+    color: rgba(255, 255, 255, 0.52);
+    font-size: clamp(6px, 0.52vh, 9px);
+    font-weight: 900;
+    letter-spacing: 0.11em;
+    text-shadow: 0 1px 4px #000;
+}
+
+.vehicle-rpm-track {
+    position: relative;
+    width: clamp(7px, 0.62vw, 11px);
+    height: 100%;
+    overflow: visible;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.72);
+}
+
+.vehicle-rpm-fill {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    height: 0%;
+    max-height: calc(100% - 4px);
+    border-radius: 999px;
+    background: var(--vehicle-gear);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.78);
+    transition: height 75ms linear;
+}
+
+.vehicle-rpm-fill.is-redline {
+    background: var(--vehicle-danger);
+    box-shadow: 0 0 9px var(--vehicle-danger);
+}
+
+.vehicle-rpm-ticks {
+    position: absolute;
+    inset: 3px -9px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.vehicle-rpm-ticks i {
+    display: block;
+    width: 5px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.36);
+    box-shadow: 0 1px 2px #000;
+}
+
+.vehicle-gear-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    background: transparent;
+}
+
+.vehicle-gear {
+    min-width: 1.25em;
+    color: var(--vehicle-gear);
+    font-size: clamp(22px, 2.25vh, 39px);
+    font-weight: 320;
+    line-height: 1;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.58), 0 2px 4px #000;
+}
+
+@keyframes vehicle-signal-blink {
+    0%, 48% { opacity: 1; }
+    49%, 100% { opacity: 0.17; }
+}
+
+/* Bottom-right radial voice visualizer */
+.voice-widget {
+    --voice-size: 7.8vh;
+    --voice-radius: -3.82vh;
+    --voice-right: 1.35vw;
+    --voice-bottom: 1.8vh;
+    --voice-accent: #35dfc4;
+    --voice-radio: #38bdf8;
+    --voice-live-color: var(--voice-accent);
+    position: fixed;
+    right: var(--voice-right);
+    bottom: var(--voice-bottom);
+    width: var(--voice-size);
+    height: var(--voice-size);
+    min-width: 62px;
+    min-height: 62px;
+    max-width: 124px;
+    max-height: 124px;
+    display: grid;
+    place-items: center;
+    opacity: 0.62;
+    visibility: visible;
+    transform: scale(0.94);
+    transition: opacity 160ms ease, transform 180ms ease, visibility 160ms linear;
+    pointer-events: none;
+}
+
+.voice-widget.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.82);
+}
+
+.voice-widget.is-talking {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.voice-widget.is-radio {
+    --voice-live-color: var(--voice-radio);
+}
+
+.voice-core {
+    position: relative;
+    z-index: 3;
+    width: 57%;
+    height: 57%;
+    border: 1px solid rgba(53, 223, 196, 0.24);
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, rgba(11, 37, 35, 0.94), rgba(2, 10, 11, 0.9));
+    box-shadow: 0 5px 17px rgba(0, 0, 0, 0.42), inset 0 0 12px rgba(53, 223, 196, 0.06);
+    transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.voice-widget.is-talking .voice-core {
+    border-color: var(--voice-live-color);
+    box-shadow: 0 0 13px var(--voice-live-color), inset 0 0 15px rgba(255, 255, 255, 0.06);
+}
+
+.voice-core::before {
+    content: "";
+    position: absolute;
+    inset: 8%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.14), transparent 42%);
+    pointer-events: none;
+}
+
+.voice-bars {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    border-radius: 50%;
+    will-change: transform;
+}
+
+.voice-widget.is-talking .voice-bars {
+    animation: voice-orbit 7s linear infinite;
+}
+
+.voice-widget.is-talking .voice-core {
+    animation: voice-core-breathe 620ms ease-in-out infinite alternate;
+}
+
+.voice-bar {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: clamp(1px, 0.13vh, 3px);
+    height: 7%;
+    border-radius: 999px;
+    background: rgba(140, 210, 202, 0.24);
+    transform: translate(-50%, -50%) rotate(var(--bar-angle)) translateY(var(--voice-radius));
+    transform-origin: center;
+    transition: background 120ms ease, opacity 120ms ease;
+}
+
+.voice-widget.is-talking .voice-bar {
+    background: var(--voice-live-color);
+    box-shadow: 0 0 7px var(--voice-live-color);
+    animation: voice-laser 520ms ease-in-out infinite alternate;
+    animation-delay: var(--bar-delay);
+}
+
+.voice-pulse {
+    position: absolute;
+    z-index: 1;
+    width: 58%;
+    height: 58%;
+    border: 1px solid var(--voice-live-color);
+    border-radius: 50%;
+    opacity: 0;
+}
+
+.voice-widget.is-talking .voice-pulse--one {
+    animation: voice-echo 1.25s ease-out infinite;
+}
+
+.voice-widget.is-talking .voice-pulse--two {
+    animation: voice-echo 1.25s 0.48s ease-out infinite;
+}
+
+@keyframes voice-orbit {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes voice-core-breathe {
+    from { transform: scale(0.96); }
+    to { transform: scale(1.06); }
+}
+
+@keyframes voice-laser {
+    0% { height: 5%; opacity: 0.48; }
+    50% { height: var(--bar-level, 12%); opacity: 1; }
+    100% { height: 9%; opacity: 0.72; }
+}
+
+@keyframes voice-echo {
+    0% { transform: scale(0.86); opacity: 0.52; }
+    70% { opacity: 0.14; }
+    100% { transform: scale(1.68); opacity: 0; }
+}
+
+/* ---- Chat: full-width tinted message cards + bottom input bar,
+          modelled on the reference (no GIF / settings buttons) ---- */
+.chat-shell {
+    --chat-accent: #35dfc4;
+    --chat-top: 2.2vh;
+    --chat-left: 1.4vw;
+    --chat-width: 26vw;
+    --chat-height: 28vh;
+    position: fixed;
+    top: var(--chat-top);
+    left: var(--chat-left);
+    width: clamp(350px, var(--chat-width), 520px);
+    height: clamp(230px, var(--chat-height), 360px);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0;
+    opacity: 1;
+    pointer-events: none;
+}
+
+.chat-shell.is-open {
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    background: rgba(7, 11, 13, 0.55);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+    pointer-events: auto;
+}
+
+.chat-messages {
+    min-height: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 4px;
+    overflow: hidden;
+}
+
+.chat-shell.is-open .chat-messages {
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.chat-messages::-webkit-scrollbar { width: 5px; }
+.chat-messages::-webkit-scrollbar-track { border-radius: 6px; background: rgba(255, 255, 255, 0.04); }
+.chat-messages::-webkit-scrollbar-thumb { border-radius: 6px; background: rgba(255, 255, 255, 0.18); }
+
+/* One card per message, tinted with that message's own colour */
+.chat-message {
+    --message-rgb: 53, 223, 196;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 11px;
+    border: 1px solid rgba(var(--message-rgb), 0.16);
+    border-radius: 8px;
+    background:
+        linear-gradient(90deg, rgba(var(--message-rgb), 0.20), rgba(var(--message-rgb), 0.06) 68%),
+        rgba(5, 9, 11, 0.60);
+    color: rgba(240, 255, 252, 0.92);
+    font-size: clamp(13px, 1.2vh, 20px);
+    line-height: 1.35;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+    overflow-wrap: anywhere;
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.chat-message.is-faded { opacity: 0; transform: translateX(-5px); }
+.chat-shell.is-open .chat-message { opacity: 1; transform: translateX(0); }
+
+.chat-icon {
+    width: clamp(30px, 3.1vh, 40px);
+    height: clamp(30px, 3.1vh, 40px);
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    margin-top: 1px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.38);
+    color: var(--message-color, var(--chat-accent));
+}
+.chat-icon svg { width: 58%; height: 58%; fill: currentColor; }
+.chat-icon svg.is-stroke { fill: none; stroke: currentColor; }
+
+.chat-body { min-width: 0; flex: 1 1 auto; }
+
+.chat-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+}
+
+.chat-tag {
+    flex: 0 0 auto;
+    color: var(--message-color, var(--chat-accent));
+    font-size: 0.68em;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    opacity: 0.65;
+}
+
+.chat-author {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--message-color, var(--chat-accent));
+    font-size: 0.94em;
+    font-weight: 800;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-time {
+    flex: 0 0 auto;
+    color: rgba(235, 245, 248, 0.38);
+    font-size: 0.72em;
+    font-variant-numeric: tabular-nums;
+}
+
+.chat-text {
+    margin-top: 1px;
+    color: rgb(var(--message-rgb));
+    opacity: 0.88;
+}
+
+/* Command suggestions, as a quiet card above the input bar */
+.chat-suggestions {
+    display: none;
+    max-height: 92px;
+    overflow-y: auto;
+    padding: 6px 9px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    background: rgba(5, 9, 11, 0.88);
+}
+
+.chat-shell.is-open .chat-suggestions.has-items { display: block; }
+
+.chat-suggestion {
+    display: flex;
+    gap: 8px;
+    padding: 3px 2px;
+    font-size: clamp(11px, 1vh, 17px);
+}
+
+.chat-suggestion-name { flex: 0 0 auto; color: var(--chat-accent); font-weight: 800; }
+
+.chat-suggestion-help {
+    min-width: 0;
+    overflow: hidden;
+    color: rgba(226, 249, 246, 0.48);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Input bar — reference layout, minus GIF and settings */
+.chat-input-row {
+    position: relative;
+    display: none;
+    min-height: clamp(40px, 4.2vh, 52px);
+    align-items: center;
+    gap: 5px;
+    padding: 0 7px 0 6px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    background: rgba(9, 13, 16, 0.86);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.30);
+}
+
+.chat-shell.is-open .chat-input-row { display: flex; }
+
+.chat-tool-btn {
+    width: clamp(28px, 3vh, 38px);
+    height: clamp(28px, 3vh, 38px);
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: rgba(235, 245, 248, 0.55);
+    cursor: pointer;
+    transition: color 120ms ease, background 120ms ease, transform 120ms ease;
+}
+.chat-tool-btn svg { width: 62%; height: 62%; fill: currentColor; }
+.chat-tool-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+.chat-tool-btn:active { transform: scale(0.94); }
+.chat-send { color: rgba(235, 245, 248, 0.8); }
+.chat-send:hover { color: var(--chat-accent); }
+
+.chat-input {
+    min-width: 0;
+    flex: 1 1 auto;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #f2f7f8;
+    font: inherit;
+    font-size: clamp(13px, 1.2vh, 20px);
+    caret-color: var(--chat-accent);
+}
+
+.chat-input::placeholder { color: rgba(226, 238, 240, 0.34); }
+
+/* Counter is kept in the DOM for the script, but not shown (reference has none) */
+.chat-counter { display: none; }
+
+.emoji-picker {
+    position: absolute;
+    right: 6px;
+    bottom: calc(100% + 8px);
+    z-index: 5;
+    width: min(270px, 72%);
+    display: none;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    background: rgba(5, 9, 11, 0.97);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.emoji-picker.is-open { display: grid; }
+
+.emoji-option {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    font-family: "Segoe UI Emoji", sans-serif;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.emoji-option:hover { background: rgba(255, 255, 255, 0.09); }
+
+/* Bottom-left status row */
+.status-hud {
+    position: fixed;
+    left: var(--hud-left);
+    top: var(--hud-top);
+    width: var(--hud-width);
+    height: clamp(18px, 2.25vh, 42px);
+    display: flex;
+    align-items: stretch;
+    gap: clamp(3px, 0.34vh, 7px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(4px);
+    transition: opacity 160ms ease, transform 180ms ease, visibility 160ms linear;
+    will-change: opacity, transform;
+}
+
+.status-hud.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.status-item {
+    --item-color: #fff;
+    --item-color-end: #fff;
+    --item-value: 100%;
+    min-width: 0;
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    gap: clamp(2px, 0.28vh, 5px);
+    padding: clamp(2px, 0.28vh, 5px);
+    border: 1px solid rgba(255, 255, 255, 0.085);
+    border-radius: clamp(5px, 0.55vh, 10px);
+    background: var(--status-background);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.32);
+    overflow: hidden;
+}
+
+.status-item--health {
+    --item-color: var(--health-color);
+    --item-color-end: var(--health-color-end);
+    flex-grow: 1.68;
+}
+
+.status-item--water {
+    --item-color: var(--water-color);
+    --item-color-end: var(--water-color-end);
+}
+
+.status-item--food {
+    --item-color: var(--food-color);
+    --item-color-end: var(--food-color-end);
+}
+
+.status-item--stamina {
+    --item-color: var(--stamina-color);
+    --item-color-end: var(--stamina-color-end);
+}
+
+.status-icon {
+    width: clamp(12px, 1.35vh, 25px);
+    height: clamp(12px, 1.35vh, 25px);
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+}
+
+.status-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: var(--item-color);
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.42));
+}
+
+.status-track {
+    position: relative;
+    min-width: 8px;
+    height: clamp(7px, 0.82vh, 16px);
+    flex: 1 1 auto;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.075);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28);
+}
+
+.status-fill {
+    position: absolute;
+    inset: 1px auto 1px 1px;
+    width: var(--item-value);
+    max-width: calc(100% - 2px);
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--item-color), var(--item-color-end));
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.09);
+    transition: width 150ms linear;
+}
+
+/* ============================================================
+   Vehicle radio (Q) — music player
+   Reference: centred teal pill, dark cover with a white note,
+   black/white seek bar, shuffle · prev · big pause · next · repeat
+   ============================================================ */
+.radio-panel {
+    --radio-teal: rgba(13, 94, 99, 0.92);
+    --radio-art: #062e30;
+    --radio-ink: #070b0b;
+    --vol: 55%;
+    --progress: 0%;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 80;
+    width: min(880px, 57vw);
+    max-height: 92vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: clamp(26px, 3.4vh, 40px) clamp(36px, 4vw, 64px) clamp(18px, 2.4vh, 26px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: clamp(48px, 6vw, 84px);
+    background:
+        radial-gradient(130% 90% at 50% 0%, rgba(255, 255, 255, 0.07), transparent 55%),
+        var(--radio-teal);
+    /* No backdrop-filter here: FiveM's CEF paints it as a solid black
+       rectangle behind the panel. The translucent teal alone gives the
+       same see-through look over the game world. */
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.radio-panel::-webkit-scrollbar { width: 5px; }
+.radio-panel::-webkit-scrollbar-thumb { border-radius: 99px; background: rgba(0, 0, 0, 0.35); }
+
+.radio-panel.is-open {
+    display: flex;
+    animation: radio-in 180ms ease;
+}
+
+@keyframes radio-in {
+    from { opacity: 0; transform: translate(-50%, -48.5%) scale(0.985); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.radio-close {
+    position: absolute;
+    top: 20px;
+    right: 26px;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.16);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 13px;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 140ms ease, background 140ms ease;
+}
+.radio-panel:hover .radio-close { opacity: 1; }
+.radio-close:hover { background: rgba(0, 0, 0, 0.32); color: #fff; }
+
+/* Dark cover with the white music note (reference image) */
+.radio-art {
+    width: min(292px, 27vh);
+    aspect-ratio: 1 / 1;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: clamp(22px, 2.4vw, 32px);
+    background:
+        radial-gradient(120% 100% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 55%),
+        var(--radio-art);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.radio-art svg {
+    width: 54%;
+    height: 54%;
+    fill: #fff;
+}
+.radio-panel.is-live .radio-art svg { animation: radio-note 2.4s ease-in-out infinite; }
+@keyframes radio-note {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.035); }
+}
+
+.radio-meta {
+    margin-top: clamp(10px, 1.6vh, 16px);
+    max-width: 100%;
+    text-align: center;
+}
+.radio-now {
+    overflow: hidden;
+    color: #fff;
+    font-size: clamp(16px, 1.35vw, 21px);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+}
+.radio-sub {
+    margin-top: 3px;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+.radio-panel.is-live .radio-sub { color: rgba(255, 255, 255, 0.85); }
+
+/* Seek bar: black played part / light remainder / black knob */
+.radio-progress-wrap {
+    width: min(560px, 84%);
+    margin-top: clamp(10px, 1.8vh, 18px);
+}
+.radio-progress {
+    width: 100%;
+    height: 5px;
+    display: block;
+    border-radius: 0;
+    background: linear-gradient(90deg, var(--radio-ink) var(--progress), rgba(224, 238, 238, 0.92) var(--progress));
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.radio-progress:disabled { cursor: default; opacity: 0.85; }
+.radio-progress::-webkit-slider-thumb {
+    width: 19px;
+    height: 19px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--radio-ink);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+    -webkit-appearance: none;
+    appearance: none;
+}
+.radio-progress::-moz-range-thumb {
+    width: 19px;
+    height: 19px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--radio-ink);
+}
+.radio-progress::-moz-range-track {
+    height: 5px;
+    background: rgba(224, 238, 238, 0.92);
+}
+.radio-progress::-moz-range-progress { height: 5px; background: var(--radio-ink); }
+.radio-times {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 10px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+}
+
+/* Transport controls: shuffle · prev · big play/pause · next · repeat */
+.radio-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(20px, 2.6vw, 38px);
+    margin-top: clamp(6px, 1.2vh, 12px);
+}
+.radio-ctl {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--radio-ink);
+    cursor: pointer;
+    transition: transform 120ms ease, opacity 120ms ease, color 120ms ease, background 120ms ease;
+}
+.radio-ctl svg { width: 32px; height: 32px; fill: currentColor; }
+.radio-ctl--line svg { fill: none; }
+.radio-ctl:hover { transform: scale(1.1); }
+.radio-ctl:active { transform: scale(0.96); }
+.radio-ctl.is-active { color: #fff; filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.35)); }
+
+.radio-ctl--main {
+    width: clamp(76px, 8.5vh, 94px);
+    height: clamp(76px, 8.5vh, 94px);
+    border-radius: 50%;
+    background: var(--radio-ink);
+    color: #fff;
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.32);
+}
+.radio-ctl--main svg { width: 40px; height: 40px; }
+.radio-ctl--main:hover { background: #101616; }
+.radio-ctl--main .radio-icon-pause { display: none; }
+.radio-panel.is-playing .radio-ctl--main .radio-icon-pause { display: block; }
+.radio-panel.is-playing .radio-ctl--main .radio-icon-play { display: none; }
+
+/* Stations — one quiet chip row, so the player above stays 1:1 with the reference */
+.radio-list {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 8px;
+    max-width: 100%;
+    margin-top: clamp(14px, 2.2vh, 22px);
+    padding: 2px 2px 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+.radio-list:empty { display: none; }
+.radio-list::-webkit-scrollbar { height: 4px; }
+.radio-list::-webkit-scrollbar-thumb { border-radius: 99px; background: rgba(0, 0, 0, 0.35); }
+
+.radio-station {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 13px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.20);
+    color: rgba(255, 255, 255, 0.85);
+    font: inherit;
+    cursor: pointer;
+    transition: background 130ms ease, border-color 130ms ease, transform 130ms ease;
+}
+.radio-station:hover { background: rgba(0, 0, 0, 0.34); transform: translateY(-1px); }
+.radio-station.is-live {
+    border-color: rgba(255, 255, 255, 0.38);
+    background: var(--radio-ink);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+.radio-station.is-disabled { opacity: 0.38; cursor: default; }
+.radio-station.is-disabled:hover { background: rgba(0, 0, 0, 0.20); transform: none; }
+.radio-index {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 10px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+.radio-station.is-live .radio-index { color: rgba(255, 255, 255, 0.75); }
+.radio-copy { display: inline-flex; align-items: baseline; gap: 7px; min-width: 0; }
+.radio-label {
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.02em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.radio-freq { color: rgba(255, 255, 255, 0.48); font-size: 10px; font-weight: 700; letter-spacing: 0.05em; white-space: nowrap; }
+.radio-state { color: rgba(255, 255, 255, 0.45); font-size: 8px; font-weight: 850; letter-spacing: 0.12em; }
+.radio-station.is-live .radio-state { color: #fff; }
+
+/* Volume — slim row under the stations */
+.radio-foot {
+    width: min(560px, 84%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+.radio-vol-icon { width: 19px; height: 19px; flex: 0 0 auto; fill: var(--radio-ink); }
+.radio-volume {
+    flex: 1 1 auto;
+    height: 4px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--radio-ink) var(--vol), rgba(224, 238, 238, 0.55) var(--vol));
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.radio-volume::-webkit-slider-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--radio-ink);
+    -webkit-appearance: none;
+    appearance: none;
+}
+.radio-volume::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: var(--radio-ink); }
+.radio-volume::-moz-range-track { height: 4px; background: rgba(224, 238, 238, 0.55); }
+.radio-volume::-moz-range-progress { height: 4px; background: var(--radio-ink); }
+#radio-vol-num {
+    min-width: 2.4ch;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 11px;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+@media (max-width: 900px) {
+    .radio-panel { width: min(680px, 94vw); border-radius: 44px; }
+    .radio-controls { gap: 16px; }
+}
+
+@media (max-width: 1100px) {
+    .compass {
+        width: min(40vw, 390px);
+    }
+
+    .player-panel {
+        width: min(34vw, 330px);
+    }
+}
