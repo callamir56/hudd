@@ -21,6 +21,8 @@
     const chatInput = document.getElementById('chat-input');
     const chatCounter = document.getElementById('chat-counter');
     const emojiButton = document.getElementById('emoji-button');
+    const chatSendButton = document.getElementById('chat-send');
+    const chatPlusButton = document.getElementById('chat-plus');
     const emojiPicker = document.getElementById('emoji-picker');
     const voiceWidget = document.getElementById('voice-widget');
     const voiceBars = document.getElementById('voice-bars');
@@ -712,6 +714,36 @@
         return 'var(--chat-accent)';
     };
 
+    const messageRgbTriplet = (color) => {
+        if (Array.isArray(color) && color.length >= 3) {
+            return color.slice(0, 3).map((value) => Math.max(0, Math.min(255, numberOr(value)))).join(', ');
+        }
+        if (typeof color === 'string') {
+            const hex = color.match(/^#([0-9a-f]{6})$/i);
+            if (hex) {
+                const n = parseInt(hex[1], 16);
+                return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
+            }
+            const rgb = color.match(/rgba?\(([^)]+)\)/i);
+            if (rgb) {
+                const parts = rgb[1].split(',').slice(0, 3).map((value) => Math.max(0, Math.min(255, numberOr(value.trim()))));
+                if (parts.length === 3) return parts.join(', ');
+            }
+        }
+        return '53, 223, 196';
+    };
+
+    /* Line/fill icons per chat tag, matching the reference cards */
+    const chatTagIcons = {
+        TWOTTER: '<svg class="is-stroke" viewBox="0 0 24 24" stroke-width="2.6" stroke-linecap="round"><path d="M5 4l14 16M19 4L5 20"/></svg>',
+        TWITTER: '<svg class="is-stroke" viewBox="0 0 24 24" stroke-width="2.6" stroke-linecap="round"><path d="M5 4l14 16M19 4L5 20"/></svg>',
+        ME: '<svg viewBox="0 0 24 24"><path d="M12 11a4.2 4.2 0 1 0 0-8.4A4.2 4.2 0 0 0 12 11Zm0 2.1c-4.5 0-8.2 2.25-8.2 5.1V21h16.4v-2.8c0-2.85-3.7-5.1-8.2-5.1Z"/></svg>',
+        DO: '<svg viewBox="0 0 24 24"><path d="M6.3 3.4 9.1 6c.95-.34 1.92-.51 2.9-.51s1.95.17 2.9.51l2.8-2.6 1.35 4.14c.26 3.12-.55 6.97-2.37 9.72C15.33 19.3 13.78 21.1 12 21.1s-3.33-1.8-4.68-3.84C5.5 14.51 4.69 10.66 4.95 7.54L6.3 3.4Z"/><circle cx="9.2" cy="11" r="1.35" fill="rgba(0,0,0,0.55)"/><circle cx="14.8" cy="11" r="1.35" fill="rgba(0,0,0,0.55)"/></svg>',
+        TRY: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="9" r="1.55"/><circle cx="15" cy="9" r="1.55"/><circle cx="9" cy="15" r="1.55"/><circle cx="15" cy="15" r="1.55"/></svg>'
+    };
+    const chatDefaultIcon = '<svg viewBox="0 0 24 24"><path d="M12 3C6.48 3 2 6.9 2 11.65c0 2.64 1.4 4.99 3.7 6.55L5.48 21.6l4.9-2.74c.52.07 1.06.1 1.62.1 5.52 0 10-3.9 10-8.65S17.52 3 12 3Z"/></svg>';
+    const chatIconFor = (tag) => chatTagIcons[tag] || chatDefaultIcon;
+
     const scrollChatToBottom = () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     };
@@ -725,35 +757,54 @@
             return;
         }
 
+        const cleanTag = typeof message.tag === 'string'
+            ? stripGameFormatting(message.tag).replace(/^\[|\]$/g, '').toUpperCase()
+            : '';
+
         const item = document.createElement('div');
         item.className = 'chat-message';
         item.dataset.createdAt = String(Date.now());
         item.style.setProperty('--message-color', messageColor(message.color));
+        item.style.setProperty('--message-rgb', messageRgbTriplet(message.color));
 
-        if (typeof message.tag === 'string' && message.tag) {
+        const iconElement = document.createElement('span');
+        iconElement.className = 'chat-icon';
+        iconElement.setAttribute('aria-hidden', 'true');
+        iconElement.innerHTML = chatIconFor(cleanTag);
+        item.appendChild(iconElement);
+
+        const bodyElement = document.createElement('div');
+        bodyElement.className = 'chat-body';
+
+        const headElement = document.createElement('div');
+        headElement.className = 'chat-head';
+
+        if (cleanTag) {
             const tagElement = document.createElement('span');
             tagElement.className = 'chat-tag';
-            tagElement.textContent = `[${stripGameFormatting(message.tag)}]`;
-            item.appendChild(tagElement);
+            tagElement.textContent = cleanTag;
+            headElement.appendChild(tagElement);
         }
 
         if (author) {
             const authorElement = document.createElement('span');
             authorElement.className = 'chat-author';
             authorElement.textContent = author;
-            item.appendChild(authorElement);
+            headElement.appendChild(authorElement);
         }
-
-        const textElement = document.createElement('span');
-        textElement.className = 'chat-text';
-        textElement.textContent = text;
-        item.appendChild(textElement);
 
         const time = new Date(Date.now() + (chatConfig.timeOffsetHours * 60 * 60 * 1000));
         const timeElement = document.createElement('span');
         timeElement.className = 'chat-time';
         timeElement.textContent = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
-        item.appendChild(timeElement);
+        headElement.appendChild(timeElement);
+
+        const textElement = document.createElement('div');
+        textElement.className = 'chat-text';
+        textElement.textContent = text;
+
+        bodyElement.append(headElement, textElement);
+        item.appendChild(bodyElement);
 
         const wasNearBottom = (chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight) < 45;
         chatMessages.appendChild(item);
@@ -841,6 +892,20 @@
         }
         closeChat();
     };
+
+    if (chatSendButton) {
+        chatSendButton.addEventListener('click', () => submitChat());
+    }
+    if (chatPlusButton) {
+        chatPlusButton.addEventListener('click', () => {
+            if (!chatInput.value.startsWith('/')) {
+                chatInput.value = `/${chatInput.value}`;
+            }
+            chatInput.focus();
+            updateChatCounter();
+            renderSuggestions();
+        });
+    }
 
     chatInput.addEventListener('input', () => {
         if (chatInput.value.length > chatConfig.maxLength) {

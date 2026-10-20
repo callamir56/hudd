@@ -115,18 +115,21 @@
     </div>
 
     <section id="chat-shell" class="chat-shell" aria-label="Server chat">
-        <header class="chat-header">
-            <div class="chat-title"><span class="chat-live-dot"></span> CITY CHAT</div>
-            <div class="chat-shortcuts"><kbd>ENTER</kbd> send <kbd>ESC</kbd> close</div>
-        </header>
-
         <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
         <div id="chat-suggestions" class="chat-suggestions"></div>
 
+        <!-- Input bar: plus (commands) - text - emoji - send. No GIF / settings. -->
         <div class="chat-input-row">
-            <span class="chat-prompt">›</span>
-            <input id="chat-input" class="chat-input" type="text" autocomplete="off" spellcheck="false" placeholder="Type a message or /command...">
-            <button id="emoji-button" class="emoji-button" type="button" aria-label="Open emoji picker">☺</button>
+            <button id="chat-plus" class="chat-tool-btn" type="button" aria-label="Commands" title="Commands (/)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <input id="chat-input" class="chat-input" type="text" autocomplete="off" spellcheck="false" placeholder="Type a message...">
+            <button id="emoji-button" class="chat-tool-btn emoji-button" type="button" aria-label="Open emoji picker" title="Emoji">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8"/><path d="M9 9.6h.01M15 9.6h.01" stroke-width="2.6"/></svg>
+            </button>
+            <button id="chat-send" class="chat-tool-btn chat-send" type="button" aria-label="Send message" title="Send">
+                <svg viewBox="0 0 24 24"><path d="M3.4 20.4 21.8 12 3.4 3.6l-.01 6.53L14.05 12 3.39 13.87z"/></svg>
+            </button>
             <span id="chat-counter" class="chat-counter">0/300</span>
             <div id="emoji-picker" class="emoji-picker" aria-hidden="true"></div>
         </div>
