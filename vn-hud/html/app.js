@@ -733,13 +733,69 @@
         return '53, 223, 196';
     };
 
-    /* Line/fill icons per chat tag, matching the reference cards */
+    /* One dedicated icon per chat mode/tag.
+       Modes come from Config.Chat.ModeColors + the mode commands in
+       server/main.lua (/ic /ooc /looc /me /do /whisper /shout /try
+       /roll /coinflip /pm /a /f /dep /ann /bot) and system tags. */
+    const STROKE = 'class="is-stroke" viewBox="0 0 24 24" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"';
     const chatTagIcons = {
+        /* In-character speech: bubble with dialogue lines */
+        IC: `<svg ${STROKE}><rect x="3" y="4.5" width="18" height="12" rx="2.5"/><path d="M8 16.5l-1.3 3.8 5.8-3.8"/><path d="M7 8.8h10M7 12h6.5"/></svg>`,
+        RP: `<svg ${STROKE}><rect x="3" y="4.5" width="18" height="12" rx="2.5"/><path d="M8 16.5l-1.3 3.8 5.8-3.8"/><path d="M7 8.8h10M7 12h6.5"/></svg>`,
+        /* Out-of-character: the real player's keyboard */
+        OOC: `<svg ${STROKE}><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 9.7h.01M10 9.7h.01M14 9.7h.01M18 9.7h.01M6 13.2h.01M18 13.2h.01M9 13.2h6"/></svg>`,
+        /* Local OOC: location pin */
+        LOOC: `<svg ${STROKE}><path d="M12 21.2S18.8 15.6 18.8 10a6.8 6.8 0 1 0-13.6 0c0 5.6 6.8 11.2 6.8 11.2Z"/><circle cx="12" cy="10" r="2.5"/></svg>`,
+        /* /me action: person */
+        ME: '<svg viewBox="0 0 24 24"><path d="M12 11a4.2 4.2 0 1 0 0-8.4A4.2 4.2 0 0 0 12 11Zm0 2.1c-4.5 0-8.2 2.25-8.2 5.1V21h16.4v-2.8c0-2.85-3.7-5.1-8.2-5.1Z"/></svg>',
+        /* /do scene: theatre mask */
+        DO: '<svg viewBox="0 0 24 24"><path d="M6.3 3.4 9.1 6c.95-.34 1.92-.51 2.9-.51s1.95.17 2.9.51l2.8-2.6 1.35 4.14c.26 3.12-.55 6.97-2.37 9.72C15.33 19.3 13.78 21.1 12 21.1s-3.33-1.8-4.68-3.84C5.5 14.51 4.69 10.66 4.95 7.54L6.3 3.4Z"/><circle cx="9.2" cy="11" r="1.35" fill="rgba(0,0,0,0.55)"/><circle cx="14.8" cy="11" r="1.35" fill="rgba(0,0,0,0.55)"/></svg>',
+        /* Whisper: speaker with a single soft wave */
+        WHISPER: '<svg viewBox="0 0 24 24"><path d="M3.5 9.2v5.6h3.7L12 18.8V5.2L7.2 9.2H3.5Z"/><path d="M15.4 9.9a3.2 3.2 0 0 1 0 4.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+        /* Shout: megaphone */
+        SHOUT: '<svg viewBox="0 0 24 24"><path d="M2.8 10.1h3.4v3.8H2.8z"/><path d="M6.2 10.1 17.6 4.9v14.2L6.2 13.9z"/><path d="M8.6 14.1v2.9a2.3 2.3 0 0 0 4.6 0v-1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M20.2 9.4a3.8 3.8 0 0 1 0 5.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+        /* /try chance: four-pip die */
+        TRY: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="9" r="1.55"/><circle cx="15" cy="9" r="1.55"/><circle cx="9" cy="15" r="1.55"/><circle cx="15" cy="15" r="1.55"/></svg>',
+        /* /roll: five-pip die */
+        ROLL: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.8" cy="8.8" r="1.4"/><circle cx="15.2" cy="8.8" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="8.8" cy="15.2" r="1.4"/><circle cx="15.2" cy="15.2" r="1.4"/></svg>',
+        /* /coinflip: coin */
+        COIN: `<svg ${STROKE}><circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="12" r="4.4"/></svg>`,
+        /* Twotter: X */
         TWOTTER: '<svg class="is-stroke" viewBox="0 0 24 24" stroke-width="2.6" stroke-linecap="round"><path d="M5 4l14 16M19 4L5 20"/></svg>',
         TWITTER: '<svg class="is-stroke" viewBox="0 0 24 24" stroke-width="2.6" stroke-linecap="round"><path d="M5 4l14 16M19 4L5 20"/></svg>',
-        ME: '<svg viewBox="0 0 24 24"><path d="M12 11a4.2 4.2 0 1 0 0-8.4A4.2 4.2 0 0 0 12 11Zm0 2.1c-4.5 0-8.2 2.25-8.2 5.1V21h16.4v-2.8c0-2.85-3.7-5.1-8.2-5.1Z"/></svg>',
-        DO: '<svg viewBox="0 0 24 24"><path d="M6.3 3.4 9.1 6c.95-.34 1.92-.51 2.9-.51s1.95.17 2.9.51l2.8-2.6 1.35 4.14c.26 3.12-.55 6.97-2.37 9.72C15.33 19.3 13.78 21.1 12 21.1s-3.33-1.8-4.68-3.84C5.5 14.51 4.69 10.66 4.95 7.54L6.3 3.4Z"/><circle cx="9.2" cy="11" r="1.35" fill="rgba(0,0,0,0.55)"/><circle cx="14.8" cy="11" r="1.35" fill="rgba(0,0,0,0.55)"/></svg>',
-        TRY: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="9" r="1.55"/><circle cx="15" cy="9" r="1.55"/><circle cx="9" cy="15" r="1.55"/><circle cx="15" cy="15" r="1.55"/></svg>'
+        /* Private message: envelope */
+        PM: `<svg ${STROKE}><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.8 7.2 12 13.4l8.2-6.2"/></svg>`,
+        /* Admin chat: shield with a tick */
+        ADMIN: `<svg ${STROKE}><path d="M12 3l7 2.4v5.5c0 4.7-3 8.5-7 10.1-4-1.6-7-5.4-7-10.1V5.4L12 3Z"/><path d="M8.9 11.7l2.2 2.2 4.2-4.4"/></svg>`,
+        /* Faction/job chat: briefcase */
+        F: `<svg ${STROKE}><rect x="3.5" y="7.5" width="17" height="12" rx="2"/><path d="M9 7.5V6.3A2.6 2.6 0 0 1 11.6 3.7h.8A2.6 2.6 0 0 1 15 6.3v1.2"/><path d="M3.5 12.8h17"/></svg>`,
+        JOB: `<svg ${STROKE}><rect x="3.5" y="7.5" width="17" height="12" rx="2"/><path d="M9 7.5V6.3A2.6 2.6 0 0 1 11.6 3.7h.8A2.6 2.6 0 0 1 15 6.3v1.2"/><path d="M3.5 12.8h17"/></svg>`,
+        /* Department radio: walkie-talkie */
+        DEP: `<svg ${STROKE}><path d="M10 7.5V2.8"/><rect x="6.5" y="7.5" width="11" height="13.5" rx="2"/><path d="M9.8 11.4h4.4M9.8 14.6h4.4"/><circle cx="12" cy="18" r="0.4" fill="currentColor"/></svg>`,
+        /* Announcement: broadcast waves */
+        ANNOUNCEMENT: `<svg ${STROKE}><circle cx="12" cy="12" r="1.6" fill="currentColor"/><path d="M9.4 14.6a3.8 3.8 0 0 1 0-5.2M14.6 9.4a3.8 3.8 0 0 1 0 5.2M6.8 17.2a7.6 7.6 0 0 1 0-10.4M17.2 6.8a7.6 7.6 0 0 1 0 10.4"/></svg>`,
+        ANN: `<svg ${STROKE}><circle cx="12" cy="12" r="1.6" fill="currentColor"/><path d="M9.4 14.6a3.8 3.8 0 0 1 0-5.2M14.6 9.4a3.8 3.8 0 0 1 0 5.2M6.8 17.2a7.6 7.6 0 0 1 0-10.4M17.2 6.8a7.6 7.6 0 0 1 0 10.4"/></svg>`,
+        /* City bot: robot head */
+        BOT: `<svg ${STROKE}><path d="M12 8.5V5"/><circle cx="12" cy="3.8" r="1.2"/><rect x="5" y="8.5" width="14" height="10.5" rx="2.5"/><circle cx="9.4" cy="13" r="0.4" fill="currentColor"/><circle cx="14.6" cy="13" r="0.4" fill="currentColor"/><path d="M9.6 16.2h4.8"/></svg>`,
+        /* /id answer: ID card */
+        ID: `<svg ${STROKE}><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.4" cy="10.8" r="1.8"/><path d="M5.7 16.3c.6-1.5 1.5-2.2 2.7-2.2s2.1.7 2.7 2.2"/><path d="M14.3 9.4h3.9M14.3 12.8h3.9"/></svg>`,
+        /* Denied / failed: crossed circle */
+        DENIED: `<svg ${STROKE}><circle cx="12" cy="12" r="8.6"/><path d="M6.4 6.4l11.2 11.2"/></svg>`,
+        FAILED: `<svg ${STROKE}><circle cx="12" cy="12" r="8.6"/><path d="M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6"/></svg>`,
+        FAIL: `<svg ${STROKE}><circle cx="12" cy="12" r="8.6"/><path d="M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6"/></svg>`,
+        ERROR: `<svg ${STROKE}><circle cx="12" cy="12" r="8.6"/><path d="M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6"/></svg>`,
+        /* Success: ticked circle */
+        SUCCESS: `<svg ${STROKE}><circle cx="12" cy="12" r="8.6"/><path d="M8.4 12.4l2.4 2.4 4.8-5.2"/></svg>`,
+        /* Warnings: triangle */
+        WARNING: `<svg ${STROKE}><path d="M12 4.2 21 19.5H3L12 4.2Z"/><path d="M12 10v4.4M12 17.1h.01"/></svg>`,
+        WARN: `<svg ${STROKE}><path d="M12 4.2 21 19.5H3L12 4.2Z"/><path d="M12 10v4.4M12 17.1h.01"/></svg>`,
+        /* Anti-spam: stopwatch */
+        'ANTI-SPAM': `<svg ${STROKE}><path d="M9.8 2.8h4.4"/><path d="M12 6v0"/><circle cx="12" cy="13.2" r="7.4"/><path d="M12 9.8v3.4l2.4 1.7"/></svg>`,
+        SPAM: `<svg ${STROKE}><path d="M9.8 2.8h4.4"/><circle cx="12" cy="13.2" r="7.4"/><path d="M12 9.8v3.4l2.4 1.7"/></svg>`,
+        /* System / server info */
+        SYSTEM: `<svg ${STROKE}><circle cx="12" cy="12" r="8.6"/><path d="M12 11.2V16M12 7.7h.01"/></svg>`,
+        SERVER: `<svg ${STROKE}><circle cx="12" cy="12" r="8.6"/><path d="M12 11.2V16M12 7.7h.01"/></svg>`,
+        INFO: `<svg ${STROKE}><circle cx="12" cy="12" r="8.6"/><path d="M12 11.2V16M12 7.7h.01"/></svg>`
     };
     const chatDefaultIcon = '<svg viewBox="0 0 24 24"><path d="M12 3C6.48 3 2 6.9 2 11.65c0 2.64 1.4 4.99 3.7 6.55L5.48 21.6l4.9-2.74c.52.07 1.06.1 1.62.1 5.52 0 10-3.9 10-8.65S17.52 3 12 3Z"/></svg>';
     const chatIconFor = (tag) => chatTagIcons[tag] || chatDefaultIcon;
@@ -757,9 +813,10 @@
             return;
         }
 
-        const cleanTag = typeof message.tag === 'string'
-            ? stripGameFormatting(message.tag).replace(/^\[|\]$/g, '').toUpperCase()
-            : '';
+        const rawTag = typeof message.tag === 'string' && message.tag
+            ? message.tag
+            : (typeof message.type === 'string' ? message.type : (typeof message.mode === 'string' ? message.mode : ''));
+        const cleanTag = stripGameFormatting(rawTag).replace(/^\[|\]$/g, '').toUpperCase();
 
         const item = document.createElement('div');
         item.className = 'chat-message';
