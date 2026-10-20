@@ -897,6 +897,15 @@
             help.textContent = suggestion.help || '';
 
             row.append(name, help);
+            row.title = suggestion.name;
+            row.addEventListener('click', () => {
+                chatInput.value = `${suggestion.name} `.slice(0, chatConfig.maxLength);
+                chatInput.focus();
+                try { chatInput.setSelectionRange(chatInput.value.length, chatInput.value.length); } catch (_) {}
+                updateChatCounter();
+                chatSuggestions.replaceChildren();
+                chatSuggestions.classList.remove('has-items');
+            });
             chatSuggestions.appendChild(row);
         });
 
